@@ -1,0 +1,31 @@
+[package]
+name = "nu_plugin_pcf"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.96.1"
+description = "A Nushell plugin to convert from and to PCF, the static subset of Pkl"
+repository = "https://github.com/EnzoAlbornoz/nu-plugin-pcf"
+license = "MIT"
+readme = "README.md"
+keywords = ["nushell", "plugin", "pkl", "pcf", "configuration"]
+categories = ["command-line-utilities", "config", "parser-implementations"]
+exclude = [".github/", "scripts/", "tests/e2e.nu", "cliff.toml", "committed.toml", "mise.toml"]
+
+[dependencies]
+nu-plugin = "0.116.1"
+nu-protocol = "0.116.1"
+
+[dev-dependencies]
+nu-plugin-test-support = "0.116.1"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+dbg_macro = "warn"
+todo = "warn"
+
+[profile.release]
+codegen-units = 1
+lto = true
+strip = true
