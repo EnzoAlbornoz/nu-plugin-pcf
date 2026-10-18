@@ -1,0 +1,61 @@
+// Values whose PCF rendering survives `from pcf | to pcf` unchanged once Pkl renders it again.
+// Constructs that `from pcf` maps lossily (List, Set, Map, Pair, Regex, Mapping) are left out.
+
+class Server {
+  host: String
+  port: Int = 8080
+  tags: Listing<String>
+}
+
+string = "Pkl"
+escapes = "tab\t quote\" backslash\\ cr\r emoji\u{1F600} \\(x) bell\u{7}"
+multiLine = """
+  line one
+  line "two" with ""\"
+
+  last
+  """
+int = 9223372036854775807
+negativeInt = -9223372036854775808
+float = 13.37
+exponentFloat = 1.0e20
+negativeZero = -0.0
+notANumber = NaN
+infinity = Infinity
+boolean = false
+nothing_ = null
+durations {
+  5.min
+  2.d
+  1500.ms
+  -3.ns
+  0.s
+}
+dataSizes {
+  5.mb
+  2.kib
+  1536.b
+  0.b
+}
+`quoted-name` = 1
+`class` = 2
+π = 3
+dynamic {
+  name = "Pigeon"
+  nested {
+    deep {
+      deeper = true
+    }
+  }
+}
+listing {
+  1
+  new { a = 1 }
+  new Listing { 2; new Listing { 3 } }
+}
+emptyObject {}
+emptyListing = new Listing {}
+server: Server = new { host = "example.com"; tags { "a" } }
+intSeq = IntSeq(1, 10)
+steppedIntSeq = IntSeq(10, 1).step(-3)
+bytes = Bytes(0, 127, 255)

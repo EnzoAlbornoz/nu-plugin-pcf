@@ -1,0 +1,65 @@
+// Every kind of value that Pkl's PCF renderer produces and `from pcf` understands.
+// `all_types.pcf` is this module rendered by `pkl eval -f pcf`; regenerate it with
+// `mise run fixtures` after changing this file.
+
+class Person {
+  name: String
+  age: Int?
+}
+
+string = "Pkl"
+int = 100
+negativeInt = -5
+hexInt = 0xFF
+float = 13.37
+exponentFloat = 1.0e20
+tinyFloat = 1.5e-7
+wholeFloat = 100.0
+notANumber = NaN
+infinity = Infinity
+negativeInfinity = -Infinity
+boolean = true
+`null` = null
+duration = 5.min
+fractionalDuration = 1.5.h
+dataSize = 5.mb
+binaryDataSize = 2.5.gib
+`quoted-name` = "quoted"
+`class` = "keyword"
+escapes = "tab\t quote\" backslash\\ cr\r emoji\u{1F600} \\(not interpolated)"
+multiLine = """
+  line one
+  line "two" with ""\"
+
+  last
+  """
+trailingNewline = "a\nb\n"
+dynamic {
+  name = "Pigeon"
+  nested {
+    deep = true
+  }
+}
+typed: Person = new { name = "Ann" }
+listing {
+  1
+  "two"
+  new { a = 1 }
+  new Listing { "nested" }
+}
+mapping {
+  ["key"] = "value"
+  [1] = "int key"
+  [true] = "bool key"
+  ["object"] { a = 1 }
+}
+empty {}
+list = List(1, 2, new Dynamic { a = 1 })
+emptyList = List()
+set = Set(1, 2)
+map = Map("a", 1, "b", List(1))
+pair = Pair(1, "two")
+intSeq = IntSeq(1, 10)
+steppedIntSeq = IntSeq(10, 1).step(-3)
+regex = Regex(#"\d+"#)
+bytes = Bytes(1, 2, 255)
