@@ -1,3 +1,6 @@
+#MISE hide=true
+# Helpers shared by the nushell tasks. This module is not a task itself.
+
 # Builds the plugin with cargo and returns the path of the executable.
 #
 # The path is taken from cargo's build messages, so it is right regardless of the configured

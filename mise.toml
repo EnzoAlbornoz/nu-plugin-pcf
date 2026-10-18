@@ -18,10 +18,6 @@ description = "Run unit, integration and Pkl interop tests"
 env = { PKL_REQUIRED = "1" }
 run = "cargo test --locked"
 
-[tasks.e2e]
-description = "Run end-to-end tests with the plugin loaded into nu"
-run = "nu --no-config-file scripts/e2e.nu"
-
 [tasks.fmt]
 description = "Format the code"
 run = "cargo fmt --all"
@@ -51,15 +47,6 @@ depends = ["lint:fmt", "lint:clippy", "lint:workflows", "lint:commits"]
 description = "Regenerate test fixtures with pkl"
 run = "pkl eval --format pcf tests/fixtures/all_types.pkl --output-path tests/fixtures/all_types.pcf"
 
-[tasks.register]
-description = "Install the plugin with cargo and register it with nu"
-run = "nu scripts/register.nu"
-
 [tasks.changelog]
 description = "Regenerate CHANGELOG.md from the commit history"
 run = "git cliff --output CHANGELOG.md"
-
-[tasks.release]
-description = "Bump the version, update the changelog, commit and tag a release"
-usage = 'arg "<version>" help="Version to release, such as 0.2.0"'
-run = "nu scripts/release.nu {{usage.version}}"

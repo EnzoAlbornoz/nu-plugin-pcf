@@ -1,12 +1,17 @@
-# Builds the plugin in release mode and packages it with the docs into an archive in `dist/`:
-# a `.zip` on Windows and a `.tar.gz` elsewhere.
+#!/usr/bin/env nu
+#MISE description="Build the plugin in release mode and package it in dist/"
+#USAGE flag "--target <target>" help="Target triple to build for, such as x86_64-unknown-linux-musl (default: the host)"
+#USAGE flag "--version <version>" help="Version label used in the archive name (default: dev)"
 
-use build.nu
+# The archive holds the plugin, the readme, the license and the changelog: a `.zip` on Windows and
+# a `.tar.gz` elsewhere.
+
+use lib/build.nu
 
 const root = path self ..
 
 def main [
-    --target: string # Target triple to build for, such as x86_64-unknown-linux-musl
+    --target: string # Target triple to build for
     --version: string = "dev" # Version label used in the archive name
 ] {
     let host = ^rustc --version --verbose | lines | parse "host: {host}" | get 0.host

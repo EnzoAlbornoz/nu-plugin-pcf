@@ -1,4 +1,5 @@
-# Installs the plugin with `cargo install` and registers it with nu.
+#!/usr/bin/env nu
+#MISE description="Install the plugin with cargo and register it with nu"
 
 const root = path self ..
 

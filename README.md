@@ -174,6 +174,9 @@ mise run register   # install the plugin and register it with your nu
 mise tasks          # list every task
 ```
 
+Simple tasks are defined in `mise.toml`. Tasks with more logic (`e2e`, `package`, `register` and
+`release`) are nushell scripts in [`mise-tasks/`](mise-tasks), which also run on Windows.
+
 The interop tests compare the plugin with Pkl's own PCF renderer. They are skipped when `pkl` is not
 installed, except under `mise run test` and in CI, where `PKL_REQUIRED=1` makes them mandatory.
 `tests/fixtures/all_types.pcf` is Pkl's rendering of `all_types.pkl`; regenerate it with

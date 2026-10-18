@@ -55,7 +55,7 @@ jobs:
       - name: Install the Rust target
         run: mise exec -- rustup target add "${TARGET}"
       - name: Build and package
-        run: mise exec -- nu --no-config-file scripts/package.nu --target "${TARGET}" --version "${VERSION}"
+        run: mise run package --target "${TARGET}" --version "${VERSION}"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: nu_plugin_pcf-${{ matrix.target }}

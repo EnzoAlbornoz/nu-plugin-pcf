@@ -1,6 +1,6 @@
 # End-to-end tests against a real `nu`, run with `mise run e2e`.
 #
-# `scripts/e2e.nu` builds the plugin and runs this file in a fresh `nu --plugins <path>` session,
+# The `e2e` task builds the plugin and runs this file in a fresh `nu --plugins <path>` session,
 # so the plugin is loaded without touching the user's plugin registry.
 
 use std/assert

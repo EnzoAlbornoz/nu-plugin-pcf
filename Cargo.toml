@@ -9,7 +9,7 @@ license = "MIT"
 readme = "README.md"
 keywords = ["nushell", "plugin", "pkl", "pcf", "configuration"]
 categories = ["command-line-utilities", "config", "parser-implementations"]
-exclude = [".github/", "scripts/", "tests/e2e.nu", "cliff.toml", "committed.toml", "mise.toml"]
+exclude = [".github/", "mise-tasks/", "tests/e2e.nu", "cliff.toml", "committed.toml", "mise.toml"]
 
 [dependencies]
 nu-plugin = "0.116.1"

@@ -1,6 +1,10 @@
-# Prepares a release: sets the version in Cargo.toml, regenerates CHANGELOG.md, commits
-# `chore(release): vX.Y.Z` and creates an annotated tag. Pushing the tag starts the release
-# workflow, which builds the binaries and publishes the GitHub release.
+#!/usr/bin/env nu
+#MISE description="Bump the version, update the changelog, commit and tag a release"
+#USAGE arg "<version>" help="Version to release, such as 0.2.0"
+
+# Sets the version in Cargo.toml, regenerates CHANGELOG.md, commits `chore(release): vX.Y.Z` and
+# creates an annotated tag. Pushing the tag starts the release workflow, which builds the binaries
+# and publishes the GitHub release.
 
 const root = path self ..
 
