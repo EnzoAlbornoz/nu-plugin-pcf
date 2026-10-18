@@ -1,0 +1,32 @@
+# Prepares a release: sets the version in Cargo.toml, regenerates CHANGELOG.md, commits
+# `chore(release): vX.Y.Z` and creates an annotated tag. Pushing the tag starts the release
+# workflow, which builds the binaries and publishes the GitHub release.
+
+const root = path self ..
+
+def main [
+    version: string # Version to release, such as 0.2.0
+] {
+    if ($version !~ '^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') {
+        error make {msg: $"`($version)` is not a valid version, expected MAJOR.MINOR.PATCH"}
+    }
+    let tag = $"v($version)"
+    cd $root
+    if (^git status --porcelain | is-not-empty) {
+        error make {msg: "the working tree has uncommitted changes"}
+    }
+    if (^git tag --list $tag | is-not-empty) {
+        error make {msg: $"tag ($tag) already exists"}
+    }
+
+    open --raw Cargo.toml
+    | str replace --regex '(?m)^version = ".*"$' $'version = "($version)"'
+    | save --force Cargo.toml
+    ^cargo update --workspace --offline
+    ^git cliff --tag $tag --output CHANGELOG.md
+
+    ^git add Cargo.toml Cargo.lock CHANGELOG.md
+    ^git commit --message $"chore\(release\): ($tag)"
+    ^git tag --annotate $tag --message $tag
+    print $"Created ($tag). Publish it with: git push --follow-tags"
+}

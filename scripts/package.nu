@@ -1,0 +1,36 @@
+# Builds the plugin in release mode and packages it with the docs into an archive in `dist/`:
+# a `.zip` on Windows and a `.tar.gz` elsewhere.
+
+use build.nu
+
+const root = path self ..
+
+def main [
+    --target: string # Target triple to build for, such as x86_64-unknown-linux-musl
+    --version: string = "dev" # Version label used in the archive name
+] {
+    let host = ^rustc --version --verbose | lines | parse "host: {host}" | get 0.host
+    let target = $target | default $host
+    let plugin = build plugin --release --target $target
+    let name = $"nu_plugin_pcf-($version)-($target)"
+    let dist = $root | path join dist
+    let staging = $dist | path join $name
+    rm --recursive --force $staging
+    mkdir $staging
+    let docs = [README.md LICENSE CHANGELOG.md] | each {|file| $root | path join $file }
+    cp $plugin ...$docs $staging
+
+    cd $dist
+    let archive = if $nu.os-info.name == windows {
+        # Windows' bsdtar writes a zip archive when asked to pick the format from the extension.
+        let archive = $"($name).zip"
+        ^($env.SystemRoot | path join System32 tar.exe) -a -c -f $archive $name
+        $archive
+    } else {
+        let archive = $"($name).tar.gz"
+        ^tar -c -z -f $archive $name
+        $archive
+    }
+    rm --recursive $staging
+    print $"Packaged ($dist | path join $archive)"
+}
