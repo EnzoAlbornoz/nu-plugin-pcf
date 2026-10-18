@@ -1,0 +1,20 @@
+# Commit message rules checked by `mise run lint:commits` and CI, see
+# https://github.com/crate-ci/committed
+style = "conventional"
+allowed_types = [
+    "build",
+    "chore",
+    "ci",
+    "docs",
+    "feat",
+    "fix",
+    "perf",
+    "refactor",
+    "revert",
+    "style",
+    "test",
+]
+subject_length = 72
+subject_capitalized = false
+line_length = 100
+merge_commit = false

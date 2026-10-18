@@ -1,0 +1,65 @@
+wrappers = { cargo = { command = "mbx", env = { MBX_CARGO_SHIM_MODE = "1" } } }
+[tools]
+rust = { version = "latest", components = "clippy,rustfmt", mr_boxington = true }
+nushell = "0.116.1"
+pkl = "0.32.1"
+mr-boxington = "latest"
+git-cliff = "2.14.2"
+committed = "1.1.11"
+actionlint = "1.7.12"
+zizmor = "1.31.1"
+
+[tasks.build]
+description = "Build the plugin in release mode"
+run = "cargo build --release --locked"
+
+[tasks.test]
+description = "Run unit, integration and Pkl interop tests"
+env = { PKL_REQUIRED = "1" }
+run = "cargo test --locked"
+
+[tasks.e2e]
+description = "Run end-to-end tests with the plugin loaded into nu"
+run = "nu --no-config-file scripts/e2e.nu"
+
+[tasks.fmt]
+description = "Format the code"
+run = "cargo fmt --all"
+
+[tasks."lint:fmt"]
+description = "Check formatting"
+run = "cargo fmt --all --check"
+
+[tasks."lint:clippy"]
+description = "Run clippy with warnings denied"
+run = "cargo clippy --all-targets --locked -- -D warnings"
+
+[tasks."lint:workflows"]
+description = "Lint GitHub Actions workflows"
+run = ["actionlint", "zizmor --offline .github"]
+
+[tasks."lint:commits"]
+description = "Check that commit messages follow Conventional Commits"
+usage = 'arg "[range]" help="Commit or range to check, such as main..HEAD" default="HEAD"'
+run = "committed --no-merge-commit {{usage.range}}"
+
+[tasks.lint]
+description = "Run all linters"
+depends = ["lint:fmt", "lint:clippy", "lint:workflows", "lint:commits"]
+
+[tasks.fixtures]
+description = "Regenerate test fixtures with pkl"
+run = "pkl eval --format pcf tests/fixtures/all_types.pkl --output-path tests/fixtures/all_types.pcf"
+
+[tasks.register]
+description = "Install the plugin with cargo and register it with nu"
+run = "nu scripts/register.nu"
+
+[tasks.changelog]
+description = "Regenerate CHANGELOG.md from the commit history"
+run = "git cliff --output CHANGELOG.md"
+
+[tasks.release]
+description = "Bump the version, update the changelog, commit and tag a release"
+usage = 'arg "<version>" help="Version to release, such as 0.2.0"'
+run = "nu scripts/release.nu {{usage.version}}"
