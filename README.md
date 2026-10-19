@@ -48,17 +48,42 @@ Every [release](https://github.com/EnzoAlbornoz/nu-plugin-pcf/releases) has arch
 | Linux (x86-64)        | `nu_plugin_pcf-<version>-x86_64-unknown-linux-musl.tar.gz` |
 | Windows (x86-64)      | `nu_plugin_pcf-<version>-x86_64-pc-windows-msvc.zip` |
 
-The Linux binary is statically linked and runs on any distribution. The release also has a
-`SHA256SUMS` file, and every archive has a
-[build provenance attestation](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations)
-that you can check with `gh attestation verify <archive> --repo EnzoAlbornoz/nu-plugin-pcf`.
+The Linux binary is statically linked and runs on any distribution. The release workflow signs the
+archives with [packslip](https://packslip.dev), so packslip or [mise](https://mise.jdx.dev) can
+install a verified release:
 
-Extract the archive somewhere permanent, then register the plugin:
+```nushell
+packslip install github.com/EnzoAlbornoz/nu-plugin-pcf
+plugin add (which nu_plugin_pcf).0.path
+plugin use pcf
+```
+
+```nushell
+mise use -g packslip:github.com/EnzoAlbornoz/nu-plugin-pcf
+plugin add (mise which nu_plugin_pcf)
+plugin use pcf
+```
+
+To install by hand, extract the archive somewhere permanent, then register the plugin:
 
 ```nushell
 plugin add ~/.local/bin/nu_plugin_pcf   # nu_plugin_pcf.exe on Windows
 plugin use pcf
 ```
+
+The release also has a `SHA256SUMS` file and `packslip.sigstore.json`, the signed list of its
+archives. To check a downloaded archive against it:
+
+```sh
+packslip verify packslip.sigstore.json \
+  --identity-prefix https://github.com/EnzoAlbornoz/nu-plugin-pcf/.github/workflows/release.yml@ \
+  --issuer https://token.actions.githubusercontent.com \
+  --artifact nu_plugin_pcf-v0.2.0-x86_64-unknown-linux-musl.tar.gz
+```
+
+Every archive also has a
+[build provenance attestation](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations)
+that you can check with `gh attestation verify <archive> --repo EnzoAlbornoz/nu-plugin-pcf`.
 
 ### From source
 
@@ -192,9 +217,18 @@ mise run release 0.2.0   # bump Cargo.toml, regenerate CHANGELOG.md, commit and 
 git push --follow-tags
 ```
 
-The tag starts the [release workflow](.github/workflows/release.yml), which builds the archives,
-attests them and publishes a GitHub release with notes generated from the commits. Run the
-workflow manually to build the archives without publishing anything.
+The tag starts the [release workflow](.github/workflows/release.yml), which builds the archives. A
+job with no write access to the repository then attests them and signs them with packslip, and a
+last job publishes a GitHub release with the archives, `SHA256SUMS`, `packslip.sigstore.json` and
+notes generated from the commits. Run the workflow manually to build the archives without
+publishing anything.
+
+Every release must be signed from `release.yml`: packslip consumers treat a release signed from
+another workflow file as coming from a new signer and refuse it until a person approves it.
+
+After the first signed release, run `packslip pin packslip.sigstore.json` on its bundle and publish
+the printed signer fingerprint here, so that users can pass it to `packslip install --pin` and
+`packslip verify --pin`.
 
 ## License
 

@@ -3,8 +3,8 @@
 #USAGE arg "<version>" help="Version to release, such as 0.2.0"
 
 # Sets the version in Cargo.toml, regenerates CHANGELOG.md, commits `chore(release): vX.Y.Z` and
-# creates an annotated tag. Pushing the tag starts the release workflow, which builds the binaries
-# and publishes the GitHub release.
+# creates an annotated tag. Pushing the tag starts the release workflow, which builds the binaries,
+# signs them with packslip and publishes the GitHub release.
 
 const root = path self ..
 

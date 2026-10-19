@@ -1,7 +1,8 @@
 name: Release
 
-# Pushing a `v*` tag (see `mise run release`) builds the plugin for every supported platform and
-# publishes a GitHub release. Running the workflow manually only builds the archives.
+# Pushing a `v*` tag (see `mise run release`) builds the plugin for every supported platform, signs
+# the archives with packslip and publishes a GitHub release. Running the workflow manually only
+# builds the archives.
 on:
   push:
     tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
@@ -62,15 +63,50 @@ jobs:
           path: dist/*
           if-no-files-found: error
 
-  release:
-    name: Publish release
+  # Signing runs apart from the release job, without write access to the repository, as
+  # https://packslip.dev/docs/publishing/ recommends.
+  sign:
+    name: Sign
     needs: build
     if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
     permissions:
+      contents: read # read the repository metadata
+      id-token: write # sign with the workflow's identity
+      attestations: write # attest the archives
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: dist
+          pattern: nu_plugin_pcf-*
+          merge-multiple: true
+      # The musl build is statically linked, but packslip reads `musl` in an archive name as a
+      # dependency on musl's C library and would not offer the archive to glibc hosts.
+      - name: Describe the Linux build as static
+        run: |
+          for archive in dist/*-linux-musl.tar.gz; do
+            printf '[[artifact]]\npath = "%s"\nlibc = "any"\n' "${archive}"
+          done > "${RUNNER_TEMP}/release.toml"
+      - uses: jdx/packslip@7b32cd29a9240927882ee18b3db1dcfd8e0328b4 # v1.7.0
+        id: packslip
+        with:
+          artifacts: dist/*.tar.gz dist/*.zip
+          bin: nu_plugin_pcf
+          manifest: ${{ runner.temp }}/release.toml
+          upload: false
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: packslip
+          path: ${{ steps.packslip.outputs.bundle }}
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    needs: sign
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
       contents: write # create the release and upload its assets
-      id-token: write # sign the build provenance attestations
-      attestations: write # store the build provenance attestations
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -80,17 +116,14 @@ jobs:
         with:
           cache: false
           install_args: git-cliff
+      # The archives and the packslip bundle.
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: dist
-          pattern: nu_plugin_pcf-*
           merge-multiple: true
       - name: Generate checksums
         working-directory: dist
-        run: sha256sum -- * > SHA256SUMS
-      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
-        with:
-          subject-path: dist/nu_plugin_pcf-*
+        run: sha256sum -- *.tar.gz *.zip > SHA256SUMS
       - name: Generate release notes
         run: git cliff --latest --strip header --output RELEASE_NOTES.md
       - name: Publish the release
@@ -103,8 +136,13 @@ jobs:
           if [[ "${TAG}" == *-* ]]; then
             flags+=(--prerelease)
           fi
-          gh release create "${TAG}" dist/* \
+          # The release stays a draft until every file is attached, which immutable releases
+          # require.
+          gh release create "${TAG}" dist/*.tar.gz dist/*.zip dist/SHA256SUMS \
+            dist/packslip.sigstore.json \
+            --draft \
             --title "${TAG}" \
             --notes-file RELEASE_NOTES.md \
             --verify-tag \
             "${flags[@]}"
+          gh release edit "${TAG}" --draft=false
