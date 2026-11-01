@@ -87,7 +87,7 @@ jobs:
           for archive in dist/*-linux-musl.tar.gz; do
             printf '[[artifact]]\npath = "%s"\nlibc = "any"\n' "${archive}"
           done > "${RUNNER_TEMP}/release.toml"
-      - uses: jdx/packslip@7b32cd29a9240927882ee18b3db1dcfd8e0328b4 # v1.7.0
+      - uses: jdx/packslip@3a4afb16b29d3ac639fcd35cbe99124184f71859 # v1.11.1
         id: packslip
         with:
           artifacts: dist/*.tar.gz dist/*.zip
